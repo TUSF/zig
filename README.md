@@ -1,44 +1,61 @@
-![ZIG](https://ziglang.org/img/zig-logo-dynamic.svg)
+# Test Case Quick Reference
 
-A general-purpose programming language and toolchain for maintaining
-**robust**, **optimal**, and **reusable** software.
+Use comments at the **end of the file** to indicate metadata about the test
+case. Here are examples of different kinds of tests:
 
-## Resources
+## Compile Error Test
 
- * [Introduction](https://ziglang.org/learn/#introduction)
- * [Download & Documentation](https://ziglang.org/download)
- * [Chapter 0 - Getting Started | ZigLearn.org](https://ziglearn.org/)
- * [Community](https://github.com/ziglang/zig/wiki/Community)
- * [Contributing](https://github.com/ziglang/zig/blob/master/CONTRIBUTING.md)
- * [Code of Conduct](https://github.com/ziglang/zig/blob/master/CODE_OF_CONDUCT.md)
- * [Frequently Asked Questions](https://github.com/ziglang/zig/wiki/FAQ)
- * [Community Projects](https://github.com/ziglang/zig/wiki/Community-Projects)
+If you want it to be run with `zig test` and match expected error messages:
 
-## Installation
+```zig
+// error
+// is_test=1
+//
+// :4:13: error: 'try' outside function scope
+```
 
- * [download a pre-built binary](https://ziglang.org/download/)
- * [install from a package manager](https://github.com/ziglang/zig/wiki/Install-Zig-from-a-Package-Manager)
- * [build from source](https://github.com/ziglang/zig/wiki/Building-Zig-From-Source)
- * [bootstrap zig for any target](https://github.com/ziglang/zig-bootstrap)
+## Execution
 
-## License
+This will do `zig run` on the code and expect exit code 0.
 
-The ultimate goal of the Zig project is to serve users. As a first-order
-effect, this means users of the compiler, helping programmers to write better
-software. Even more important, however, are the end-users.
+```zig
+// run
+```
 
-Zig is intended to be used to help **end-users** accomplish their goals. Zig
-should be used to empower end-users, never to exploit them financially, or to
-limit their freedom to interact with hardware or software in any way.
+## Incremental Compilation
 
-However, such problems are best solved with social norms, not with software
-licenses. Any attempt to complicate the software license of Zig would risk
-compromising the value Zig provides.
+Make multiple files that have ".", and then an integer, before the ".zig"
+extension, like this:
 
-Therefore, Zig is available under the MIT (Expat) License, and comes with a
-humble request: use it to make software better serve the needs of end-users.
+```
+hello.0.zig
+hello.1.zig
+hello.2.zig
+```
 
-This project redistributes code from other projects, some of which have other
-licenses besides MIT. Such licenses are generally similar to the MIT license
-for practical purposes. See the subdirectories and files inside lib/ for more
-details.
+Each file can be a different kind of test, such as expecting compile errors,
+or expecting to be run and exit(0). The test harness will use these to simulate
+incremental compilation.
+
+At the time of writing there is no way to specify multiple files being changed
+as part of an update.
+
+## Subdirectories
+
+Subdirectories do not have any semantic meaning but they can be used for
+organization since the test harness will recurse into them. The full directory
+path will be prepended as a prefix on the test case name.
+
+## Limiting which Backends and Targets are Tested
+
+```zig
+// run
+// backend=stage2,llvm
+// target=x86_64-linux,x86_64-macos
+```
+
+Possible backends are:
+
+ * `stage1`: equivalent to `-fstage1`.
+ * `stage2`: equivalent to passing `-fno-stage1 -fno-LLVM`.
+ * `llvm`: equivalent to `-fLLVM -fno-stage1`.
